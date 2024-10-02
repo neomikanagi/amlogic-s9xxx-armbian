@@ -1,0 +1,32 @@
+name: Sync with Upstream
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # 每天凌晨3点运行一次
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 检出代码
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0  # 获取完整的历史记录以进行合并
+
+    # 设置 Git 用户
+    - name: Set up Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+    # 添加上游仓库并同步更新
+    - name: Sync with upstream
+      run: |
+        git remote add upstream https://github.com/ophub/amlogic-s9xxx-armbian.git
+        git fetch upstream
+        git checkout main  # 假设你的主要分支是 main
+        git merge upstream/main --allow-unrelated-histories  # 合并上游的更新
+        git push origin main  # 推送到你的 fork
